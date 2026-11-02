@@ -1,0 +1,43 @@
+module timer #(
+    parameter DIVISOR = 10
+) (
+    input clk, reset, enable,
+    output reg tick
+);
+localparam CW = (DIVISOR <= 2) ? 1 : $clog2(DIVISOR);
+reg [CW-1:0] count;
+always @(posedge clk) begin
+    if (reset) begin
+        count <= 0;
+        tick <= 0;
+    end else if (!enable) begin
+        count <= 0;
+        tick <= 0;
+    end else if (count == DIVISOR-1) begin
+        count <= 0;
+        tick <= 1;
+    end else begin
+        count <= count + 1'b1;
+        tick <= 0;
+    end
+end
+endmodule
+
+module timer_tb;
+reg clk, reset, enable;
+wire tick;
+timer #(4) dut(.clk(clk), .reset(reset), .enable(enable), .tick(tick));
+    initial begin
+    $dumpfile("dump.vcd");
+      $dumpvars(0, timer_tb);
+end
+
+always #5 clk = ~clk;
+initial begin
+    clk=0; reset=1; enable=0;
+    #12; reset=0; enable=1;
+    #100; $finish;
+end
+initial $monitor("t=%0t reset=%b enable=%b tick=%b",
+                 $time,reset,enable,tick);
+endmodule
