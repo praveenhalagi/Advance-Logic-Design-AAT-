@@ -1,0 +1,38 @@
+module divide_by_n #(
+    parameter N = 4
+) (
+    input clk, reset,
+    output reg tick
+);
+localparam CW = (N <= 2) ? 1 : $clog2(N);
+reg [CW-1:0] count;
+always @(posedge clk) begin
+    if (reset) begin
+        count <= 0;
+        tick <= 0;
+    end else if (count == N-1) begin
+        count <= 0;
+        tick <= 1;
+    end else begin
+        count <= count + 1'b1;
+        tick <= 0;
+    end
+end
+endmodule
+
+module divide_by_n_tb;
+reg clk, reset;
+wire tick;
+divide_by_n #(4) dut(.clk(clk), .reset(reset), .tick(tick));
+always #5 clk=~clk;
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0, divide_by_n_tb);
+end
+initial begin
+    clk=0; reset=1; #12;
+    reset=0; #100;
+    $finish;
+end
+initial $monitor("t=%0t reset=%b tick=%b",$time,reset,tick);
+endmodule
