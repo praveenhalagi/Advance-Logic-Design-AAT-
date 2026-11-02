@@ -1,0 +1,28 @@
+module johnson_counter (
+    input clk, reset,
+    output reg [3:0] q
+);
+always @(posedge clk) begin
+    if (reset) q <= 4'b0000;
+    else q <= {q[2:0], ~q[3]};
+end
+endmodule
+
+module johnson_counter_tb;
+reg clk, reset;
+wire [3:0] q;
+johnson_counter dut(.clk(clk), .reset(reset), .q(q));
+  
+    initial begin
+    $dumpfile("dump.vcd");
+      $dumpvars(0, johnson_counter_tb);
+end
+
+always #5 clk=~clk;
+initial begin
+    clk=0; reset=1; #12;
+    reset=0; #100;
+    $finish;
+end
+initial $monitor("t=%0t reset=%b q=%b",$time,reset,q);
+endmodule
