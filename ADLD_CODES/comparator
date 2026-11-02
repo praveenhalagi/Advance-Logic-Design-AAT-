@@ -1,0 +1,31 @@
+module comparator #(parameter N=4) (
+    input  [N-1:0] A, B,
+    output reg A_gt_B, A_eq_B, A_lt_B
+);
+always @(*) begin
+    A_gt_B = 1'b0;
+    A_eq_B = 1'b0;
+    A_lt_B = 1'b0;
+    if (A > B) A_gt_B = 1'b1;
+    else if (A == B) A_eq_B = 1'b1;
+    else A_lt_B = 1'b1;
+end
+endmodule
+
+module comparator_tb;
+reg [3:0] A, B;
+wire gt, eq, lt;
+comparator #(4) dut(.A(A), .B(B),
+    .A_gt_B(gt), .A_eq_B(eq), .A_lt_B(lt));
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0,comparator_tb );
+end
+initial begin
+    A=4'd9; B=4'd4; #10;
+    A=4'd6; B=4'd6; #10;
+    A=4'd2; B=4'd11; #10;
+    $finish;
+end
+initial $monitor("A=%d B=%d gt=%b eq=%b lt=%b",A,B,gt,eq,lt);
+endmodule
