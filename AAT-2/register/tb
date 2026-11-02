@@ -1,0 +1,22 @@
+module tb_shi _register; 
+reg clk, reset, serial_in;
+wire serial_out;  
+shi _register uut (     .clk(clk),     .reset(reset),     .serial_in(serial_in),     .serial_out(serial_out) ); 
+always #5 clk = ~clk;
+ini al begin    
+clk = 0;    
+reset = 1;     
+serial_in = 0;     
+#10 reset = 0;     
+serial_in = 1; #10; 
+serial_in = 0; #10;    
+serial_in = 1; #10;     
+serial_in = 1; #10;     
+serial_in = 0; #10;    
+#20 $finish; 
+end 
+inial begin
+$dumpfile("reg.vcd");
+$dumpvars; 
+end
+endmodule 
