@@ -1,0 +1,36 @@
+module barrel_shifter (
+    input [3:0] data_in,
+    input [1:0] shamt,
+    input dir,             // 0=left, 1=right
+    output reg [3:0] data_out
+);
+always @(*) begin
+    if (dir == 1'b0)
+        data_out = data_in << shamt;
+    else
+        data_out = data_in >> shamt;
+end
+endmodule
+
+module barrel_shifter_tb;
+reg [3:0] data_in;
+reg [1:0] shamt;
+reg dir;
+wire [3:0] data_out;
+barrel_shifter dut(.data_in(data_in), .shamt(shamt),
+                   .dir(dir), .data_out(data_out));
+  initial begin
+    $dumpfile("dump.vcd");
+    $dumpvars(0, barrel_shifter_tb);
+end
+initial begin
+    data_in=4'b1011; dir=0; shamt=0; #10;
+    shamt=1; #10;
+    shamt=2; #10;
+    dir=1; shamt=1; #10;
+    shamt=2; #10;
+    $finish;
+end
+initial $monitor("data=%b dir=%b shamt=%d output=%b",
+                 data_in,dir,shamt,data_out);
+endmodule
