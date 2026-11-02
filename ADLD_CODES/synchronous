@@ -1,0 +1,86 @@
+module JK_flipflop(
+    input clk, rst_n, j, k,
+    output reg q,
+    output q_bar
+);
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            q <= 0;
+        else begin
+            case ({j,k})
+                2'b00: q <= q;
+                2'b01: q <= 0;
+                2'b10: q <= 1;
+                2'b11: q <= ~q;
+            endcase
+        end
+    end
+
+    assign q_bar = ~q;
+
+endmodule
+
+
+module synchronous_counter(
+    input clk, rst_n, up,
+    output [3:0] q,
+    output [3:0] q_bar
+);
+
+    // All flip-flops use the same clock
+    JK_flipflop jk0(clk, rst_n, 1'b1, 1'b1, q[0], q_bar[0]);
+
+    JK_flipflop jk1(clk, rst_n,
+                    up ? q[0] : q_bar[0],
+                    up ? q[0] : q_bar[0],
+                    q[1], q_bar[1]);
+
+    JK_flipflop jk2(clk, rst_n,
+                    up ? (q[1] & q[0]) : (q_bar[1] & q_bar[0]),
+                    up ? (q[1] & q[0]) : (q_bar[1] & q_bar[0]),
+                    q[2], q_bar[2]);
+
+    JK_flipflop jk3(clk, rst_n,
+                    up ? (q[2] & q[1] & q[0]) :
+                         (q_bar[2] & q_bar[1] & q_bar[0]),
+                    up ? (q[2] & q[1] & q[0]) :
+                         (q_bar[2] & q_bar[1] & q_bar[0]),
+                    q[3], q_bar[3]);
+
+endmodule
+
+
+module tb;
+
+    reg clk, rst_n, up;
+    wire [3:0] q, q_bar;
+
+    synchronous_counter dut(clk, rst_n, up, q, q_bar);
+ initial begin
+    $dumpfile("dump.vcd");
+      $dumpvars(0, tb);
+end
+    always #5 clk = ~clk;
+
+    initial begin
+        $monitor("Time=%0t | up=%b | q=%b",
+                 $time, up, q);
+
+        clk = 0;
+        rst_n = 0;
+        up = 1;
+
+        #10 rst_n = 1;
+
+        // Up counting
+        #100;
+
+        // Down counting
+        up = 0;
+        #100;
+
+        $finish;
+    end
+
+endmodule
