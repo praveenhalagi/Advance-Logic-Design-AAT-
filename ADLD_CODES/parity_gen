@@ -1,0 +1,73 @@
+module parity_generator (
+    input [3:0] data,
+    output parity
+);
+    // Generate even parity
+    assign parity = ^data;
+endmodule
+
+
+module parity_checker (
+    input [3:0] data,
+    input parity,
+    output error
+);
+    // Error is 1 if parity does not match
+    assign error = ^{data, parity};
+endmodule
+
+module parity_tb;
+
+    reg [3:0] data;
+    reg parity_in;
+
+    wire parity_out;
+    wire error;
+
+    parity_generator gen (
+        .data(data),
+        .parity(parity_out)
+    );
+
+    parity_checker chk (
+        .data(data),
+        .parity(parity_in),
+        .error(error)
+    );
+
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, parity_tb);
+
+        $monitor("Time=%0t data=%b generated_parity=%b received_parity=%b error=%b",
+                 $time, data, parity_out, parity_in, error);
+
+        // Test 1: No 1s
+        data = 4'b0000;
+        #10 parity_in = parity_out;
+        #10;
+
+        // Test 2: One 1
+        data = 4'b0001;
+        #10 parity_in = parity_out;
+        #10;
+
+        // Test 3: Two 1s
+        data = 4'b0011;
+        #10 parity_in = parity_out;
+        #10;
+
+        // Test 4: Three 1s
+        data = 4'b0111;
+        #10 parity_in = parity_out;
+        #10;
+
+        // Test 5: Introduce a parity error
+        data = 4'b0001;
+        #10 parity_in = ~parity_out;
+        #10;
+
+        $finish;
+    end
+
+endmodule
